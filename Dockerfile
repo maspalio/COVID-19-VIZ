@@ -13,4 +13,6 @@ RUN /opt/ve/bin/pip install --requirement requirements.txt
 ADD covid.py .
 ADD COVID.ipynb .
 
+RUN /opt/ve/bin/jupyter trust COVID.ipynb
+
 CMD ["/opt/ve/bin/jupyter", "notebook", "--ip", "0.0.0.0", "--no-browser", "--allow-root"]
