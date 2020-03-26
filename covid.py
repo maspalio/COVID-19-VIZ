@@ -6,7 +6,7 @@ import re
 import numpy
 
 import pandas
-from pandas import DataFrame
+from pandas import DataFrame, read_csv
 
 import plotly.graph_objects as go
 from plotly.graph_objects import Bar, Figure, Scatter
@@ -23,7 +23,6 @@ class Covid():
     INDEXES      = ["Country/Region", "Province/State", "Date"]
     INDEXES_LHS  = ["Country/Region", "Province/State"]  # FIXME vs INDEXES[0:1]?
     INDEXES_MAIN = ["Country/Region", "Date"]
-
 
     #
     # Init.
@@ -48,7 +47,7 @@ class Covid():
         for category in self.CATEGORIES:
             capitalized = category.capitalize()
 
-            self.raw_df[category]               = pandas.read_csv("{}/time_series_19-covid-{}.csv".format(self.CSSE_URL, capitalized))
+            self.raw_df[category]               = read_csv("{}/time_series_covid19_{}_global.csv".format(self.CSSE_URL, category))
             self.molten_df[category]            = self._molten_df(self.raw_df[category])
             self.per_country_df[category]       = self._per_country_df(self.molten_df[category], "Total {}".format(capitalized))
             self.daily_per_country_df[category] = self._daily_per_country_df(self.per_country_df[category], "Total {}".format(capitalized), "Daily {}".format(capitalized))
