@@ -12,6 +12,8 @@ import plotly.graph_objects as go
 from plotly.graph_objects import Bar, Figure, Scatter
 from plotly.subplots import make_subplots
 
+import inflect
+
 
 class Covid():
     #
@@ -76,11 +78,14 @@ class Covid():
         self.main_df["Total Active"] = self.main_df["Total Confirmed"] - self.main_df["Total Deaths"] - self.main_df["Total Recovered"]
         self.main_df["Death Ratio"]  = numpy.round(self.main_df["Total Deaths"] / (self.main_df["Total Deaths"] + self.main_df["Total Recovered"]), 2)  # Case Fatality Rates (CFR)
 
+        self.main_df["Daily Active"] = self.main_df["Total Active"].diff().fillna(0) * -1  # due to descending sort for display purposes
+        self.main_df["Daily Active"] = pandas.to_numeric(self.main_df["Daily Active"], downcast="integer")
+
         #
         # N.W.O.
         #
 
-        columns = ["Total Active"] + ["Total {}".format(c.capitalize()) for c in self.CATEGORIES] + ["Daily {}".format(c.capitalize()) for c in self.CATEGORIES] + ["Death Ratio"]
+        columns = ["Total Active"] + ["Total {}".format(c.capitalize()) for c in self.CATEGORIES] + ["Daily Active"] + ["Daily {}".format(c.capitalize()) for c in self.CATEGORIES] + ["Death Ratio"]
 
         self.main_df = self.main_df[columns]
 
@@ -202,9 +207,9 @@ class Covid():
 
     def countries_subplots(self, countries: list) -> Figure:
         subplot = OrderedDict({
-            "Total Confirmed":  {"row": 1, "col": 1},
-            "Total Active":     {"row": 1, "col": 2},
-            "Total Deaths":     {"row": 2, "col": 1},
+            "Total Confirmed": {"row": 1, "col": 1},
+            "Total Active":    {"row": 1, "col": 2},
+            "Total Deaths":    {"row": 2, "col": 1},
             "Total Recovered": {"row": 2, "col": 2},
         })
 
@@ -247,3 +252,42 @@ class Covid():
         fig.update_layout(title_text=title)
 
         return fig
+
+    def totals_bar_chart(self) -> Figure:
+        return self.whatevers_bar_chart(whatever="total")
+
+    def dailies_bar_chart(self) -> Figure:
+        return self.whatevers_bar_chart(whatever="daily")
+
+    def whatevers_bar_chart(self, whatever: str="total") -> Figure:
+        """ Stacked bar chart of total active, deaths and recovered values """
+
+        columns = ["active", "deaths", "recovered"]
+        dates   = self.main_df.reset_index()["Date"]
+        color   = {
+            "active":    "#ffb347",  # Pastel Orange
+            "deaths":    "#ff6961",  # Pastel Red
+            "recovered": "#77dd78",  # Pastel Green
+        }
+
+        engine = inflect.engine()
+
+        fig = Figure()
+
+        for column in columns:
+            name = "{} {}".format(whatever.capitalize(), column.capitalize())
+
+            ys = self.main_df[name].sum(level=1)
+            if whatever == "daily":
+                ys = ys[1:]
+
+            fig.add_trace(Bar(name=name, x=dates, y=ys, marker={"color": color[column]}))
+
+        fig.update_layout(barmode="stack", title_text=engine.plural(whatever).capitalize())
+
+        fig.update_traces(marker_line_width=0)
+
+        return fig
+
+    def whatevers_bar_chart_whatevers(self) -> list():
+        return ["total", "daily"]
