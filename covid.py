@@ -74,7 +74,7 @@ class Covid():
         #
 
         self.main_df["Total Active"] = self.main_df["Total Confirmed"] - self.main_df["Total Deaths"] - self.main_df["Total Recovered"]
-        self.main_df["Death Ratio"]  = numpy.round(self.main_df["Total Deaths"] / self.main_df["Total Confirmed"], 2)
+        self.main_df["Death Ratio"]  = numpy.round(self.main_df["Total Deaths"] / (self.main_df["Total Deaths"] + self.main_df["Total Recovered"]), 2)  # Case Fatality Rates (CFR)
 
         #
         # N.W.O.
