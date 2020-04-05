@@ -87,11 +87,11 @@ class Covid():
     def _molten_df(self, df: DataFrame) -> DataFrame:
         """
             Melt incoming DF into [["Country/Region", "Province/State", "Date"] X ["Cases"]] DF.
-            
+
             RHS MM/DD/YYYY columns melted into "Cases" column.
-            
+
             "Date" entries as DateTime instances.
-            
+
             Sorted ascendingly on ["Country/Region", "Province/State"] columns.
             Sorted descendingly on ["Date"] column.
         """
@@ -173,12 +173,17 @@ class Covid():
         fig = Figure()
 
         ratio_re = re.compile(r"(?x: \b Ratio \b )")
+        daily_re = re.compile(r"(?x: \b Daily \b )")
+
         if ratio_re.search(column) is not None:
             fig.update_layout(yaxis=dict(tickformat="%.format.%3f"))
-        
+
         for country in countries:
             country_df = self.main_df.loc[[country]].reset_index(level=0, drop=True)
-            
+
+            if daily_re.search(column) is not None:
+                country_df = country_df[1:]
+
             fig.add_trace(
                 Scatter(
                     x=country_df.index,
@@ -216,7 +221,7 @@ class Covid():
 
             for data in scatters_fig["data"]:
                 fig.append_trace(data, row, col)
-        
+
         return fig
 
     def countries_bar_chart(self, column: str, count: int=None, exclusions: list=None) -> Figure:
