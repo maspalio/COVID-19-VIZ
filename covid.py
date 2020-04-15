@@ -7,7 +7,7 @@ import numpy
 from numpy import nan
 
 import pandas
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_csv, Series
 
 import plotly.graph_objects as go
 from plotly.graph_objects import Bar, Figure, Scatter
@@ -175,7 +175,7 @@ class Covid():
     # DFs.
     #
 
-    def countries_dataframe(self, countries: list, column: str, threshold: int = 50) -> DataFrame:
+    def countries_dataframe(self, countries: list, column: str, threshold: int = 100) -> DataFrame:
         countries_df = DataFrame()
 
         for country in countries:
@@ -220,6 +220,31 @@ class Covid():
             )
 
         fig.update_layout(title_text=column)
+
+        return fig
+
+    def countries_shifted_scatters(self, countries: list, column: str, threshold: int = 100, mode: str = None, showlegend: bool=True) -> Figure:
+        countries_df = self.countries_dataframe(countries=countries, column=column, threshold=threshold)
+        countries_df.dropna(axis="index", how="all", inplace=True)
+        countries_df = countries_df.apply(lambda x: Series(x.dropna().values))
+
+        fig = Figure()
+
+        for country in countries:
+            fig.add_trace(
+                Scatter(
+                    x=countries_df.index,
+                    y=countries_df[country],
+                    name=country,
+                    mode=mode,
+                    line_color=self.color.get(country, "black"),
+                    opacity=0.9,
+                    showlegend=showlegend,
+                )
+            )
+
+        fig.update_layout(yaxis_type="log")
+        fig.update_layout(title_text="Days since {} column above {}".format(column, threshold))
 
         return fig
 
