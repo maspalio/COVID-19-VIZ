@@ -4,6 +4,7 @@ from collections import OrderedDict
 import re
 
 import numpy
+from numpy import nan
 
 import pandas
 from pandas import DataFrame, read_csv
@@ -169,6 +170,23 @@ class Covid():
         neo_df.sort_values(by=column, ascending=False, inplace=True)
 
         return neo_df
+
+    #
+    # DFs.
+    #
+
+    def countries_dataframe(self, countries: list, column: str, threshold: int = 50) -> DataFrame:
+        countries_df = DataFrame()
+
+        for country in countries:
+            country_df = self.main_df.loc[[country]].reset_index(level=0, drop=True)
+
+            countries_df[[country]] = country_df[[column]]
+
+        for country in countries:
+            countries_df[country] = countries_df[country].apply(lambda v: nan if v < threshold else v)
+
+        return countries_df.reset_index(drop=True).iloc[::-1].reset_index(drop=True)
 
     #
     # Figures.
