@@ -228,6 +228,8 @@ class Covid():
         countries_df.dropna(axis="index", how="all", inplace=True)
         countries_df = countries_df.apply(lambda x: Series(x.dropna().values))
 
+        engine = inflect.engine()
+
         fig = Figure()
 
         for country in countries:
@@ -244,7 +246,7 @@ class Covid():
             )
 
         fig.update_layout(yaxis_type="log")
-        fig.update_layout(title_text="Days since {} column above {}".format(column, threshold))
+        fig.update_layout(title_text="Days since {} column above {} {}".format(column, threshold, engine.plural_noun("occurence", threshold)))
 
         return fig
 
