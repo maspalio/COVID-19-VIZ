@@ -2,6 +2,7 @@
 
 from collections import OrderedDict
 import re
+import sys
 
 import numpy
 from numpy import nan
@@ -15,17 +16,20 @@ from plotly.subplots import make_subplots
 
 import inflect
 
+from urllib.error import HTTPError
+
 
 class Covid():
     #
     # Constants.
     #
 
-    CSSE_URL     = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/"
-    CATEGORIES   = ["confirmed", "deaths", "recovered"]
-    INDEXES      = ["Country/Region", "Province/State", "Date"]
-    INDEXES_LHS  = ["Country/Region", "Province/State"]  # FIXME vs INDEXES[0:1]?
-    INDEXES_MAIN = ["Country/Region", "Date"]
+    CSSE_URL       = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master"
+    CSSE_DIRECTORY = "csse_covid_19_data/csse_covid_19_time_series"
+    CATEGORIES     = ["confirmed", "deaths", "recovered"]
+    INDEXES        = ["Country/Region", "Province/State", "Date"]
+    INDEXES_LHS    = ["Country/Region", "Province/State"]  # FIXME vs INDEXES[0:1]?
+    INDEXES_MAIN   = ["Country/Region", "Date"]
 
     #
     # Init.
@@ -50,7 +54,13 @@ class Covid():
         for category in self.CATEGORIES:
             capitalized = category.capitalize()
 
-            self.raw_df[category]               = read_csv("{}/time_series_covid19_{}_global.csv".format(self.CSSE_URL, category))
+            csv_file = "{}/time_series_covid19_{}_global.csv".format(self.CSSE_DIRECTORY, category)
+
+            try:
+                self.raw_df[category] = read_csv("{}/{}".format(self.CSSE_URL, csv_file))
+            except HTTPError:
+                self.raw_df[category] = read_csv(csv_file)  # FileNotFoundError
+
             self.molten_df[category]            = self._molten_df(self.raw_df[category])
             self.per_country_df[category]       = self._per_country_df(self.molten_df[category], "Total {}".format(capitalized))
             self.daily_per_country_df[category] = self._daily_per_country_df(self.per_country_df[category], "Total {}".format(capitalized), "Daily {}".format(capitalized))
