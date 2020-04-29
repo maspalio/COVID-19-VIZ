@@ -304,6 +304,7 @@ class Covid():
         if exclusions is not None:
             title = "{} Excluding {}".format(title, exclusions)
 
+        fig.update_layout(yaxis_type="log")
         fig.update_layout(title_text=title)
 
         return fig
