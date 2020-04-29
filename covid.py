@@ -256,7 +256,7 @@ class Covid():
             )
 
         fig.update_layout(yaxis_type="log")
-        fig.update_layout(title_text="Days since {} column above {} {}".format(column, threshold, engine.plural_noun("occurence", threshold)))
+        fig.update_layout(title_text="Days since \"{}\" column above {} {}".format(column, threshold, engine.plural_noun("occurence", threshold)))
 
         return fig
 
